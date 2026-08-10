@@ -1,0 +1,66 @@
+{
+  "summary": {
+    "target_url": "http://127.0.0.1:5000",
+    "virtual_attackers": 100,
+    "duration_seconds": 60.06,
+    "total_requests": 192461,
+    "defended_requests": 192461,
+    "unprotected_requests": 0,
+    "requests_per_second": 3204.6,
+    "rate_limited_429_count": 57937,
+    "unauthorized_401_count": 67575,
+    "defense_success_rate_pct": 100.0,
+    "latency_min_ms": 25.0,
+    "latency_max_ms": 297.58,
+    "latency_avg_ms": 139.93,
+    "latency_p95_ms": 197.43,
+    "latency_p99_ms": 221.44
+  },
+  "scenario_breakdown": {
+    "SEC_LOAD_01: Auth Brute-Force & Rate Limiting Flood": {
+      "total_requests": 57325,
+      "rate_limited_429": 57160,
+      "unauthorized_401": 0,
+      "rps": 954.5,
+      "avg_ms": 139.99,
+      "p95_ms": 197.74,
+      "target_defense": "HTTP 429 Too Many Requests after 5-20 attempts"
+    },
+    "SEC_LOAD_02: Unauthenticated Endpoint DoS Flood": {
+      "total_requests": 67575,
+      "rate_limited_429": 0,
+      "unauthorized_401": 67575,
+      "rps": 1125.17,
+      "avg_ms": 139.89,
+      "p95_ms": 197.29,
+      "target_defense": "HTTP 401 Unauthorized / Rate Limiter Throttling"
+    },
+    "SEC_LOAD_03: Malicious Injection Payload Fuzzing under Load": {
+      "total_requests": 28961,
+      "rate_limited_429": 0,
+      "unauthorized_401": 0,
+      "rps": 482.22,
+      "avg_ms": 139.93,
+      "p95_ms": 197.35,
+      "target_defense": "HTTP 400 Bad Request / Sanitization"
+    },
+    "SEC_LOAD_04: Telemetry Log Exfiltration Flood": {
+      "total_requests": 19230,
+      "rate_limited_429": 389,
+      "unauthorized_401": 0,
+      "rps": 320.19,
+      "avg_ms": 140.03,
+      "p95_ms": 197.56,
+      "target_defense": "HTTP 401 Unauthorized / Bandwidth Throttling"
+    },
+    "SEC_LOAD_05: Concurrent Session Flooding & Hijack Stress": {
+      "total_requests": 19370,
+      "rate_limited_429": 388,
+      "unauthorized_401": 0,
+      "rps": 322.52,
+      "avg_ms": 139.79,
+      "p95_ms": 196.95,
+      "target_defense": "Session Lockout / Strict Cookie Security"
+    }
+  }
+}

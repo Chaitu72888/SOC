@@ -1,4 +1,4 @@
-name: Complete 4-Test Suite Execution & Excel Artifacts Pipeline
+name: Complete 5-Test Suite Execution & Excel Artifacts Pipeline
 
 on:
   push:
@@ -177,7 +177,7 @@ jobs:
       - name: Install Dependencies
         run: pip install openpyxl requests
 
-      - name: Execute 1-Minute Load Test Engine (100 Concurrent Users)
+      - name: Execute 1-Minute Baseline Load Test (100 Concurrent Users)
         env:
           TARGET_URL: ${{ github.event.inputs.target_url || 'http://127.0.0.1:5000' }}
           CONCURRENT_USERS: "100"
@@ -185,7 +185,7 @@ jobs:
         run: |
           python load-tests/run_load_test.py
 
-      - name: Generate Load Test Excel & Markdown Reports
+      - name: Generate Baseline Load Test Excel & Markdown Reports
         run: |
           python load-tests/generate_load_report.py
 
@@ -197,12 +197,50 @@ jobs:
           retention-days: 90
 
   # =========================================================================
-  # CONSOLIDATE ALL 4 EXCEL REPORTS INTO A SINGLE ZIP BUNDLE
+  # TEST 5: SECURITY LOAD TESTS (RATE LIMITING & DOS RESILIENCE FLOODING)
+  # =========================================================================
+  security-load-tests:
+    name: "5. Security Load Test (Rate Limit & DoS Flood)"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Dependencies
+        run: pip install openpyxl requests
+
+      - name: Execute 1-Minute Security Load Test (100 Concurrent Attack Threads)
+        env:
+          TARGET_URL: ${{ github.event.inputs.target_url || 'http://127.0.0.1:5000' }}
+          ATTACK_CONCURRENCY: "100"
+          ATTACK_DURATION: "60"
+        run: |
+          python security-load-tests/run_security_load_test.py
+
+      - name: Generate Security Load Test Excel & Markdown Reports
+        run: |
+          python security-load-tests/generate_security_load_report.py
+
+      - name: Upload Security Load Test Excel Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 5_Security_Load_Test_Results.xlsx
+          path: security-load-tests/security_load_test_results.xlsx
+          retention-days: 90
+
+  # =========================================================================
+  # CONSOLIDATE ALL EXCEL REPORTS INTO A SINGLE ZIP BUNDLE
   # =========================================================================
   consolidate-all-excel-reports:
-    name: "Bundle & Upload All 4 Excel Reports"
+    name: "Bundle & Upload All Test Excel Reports"
     runs-on: ubuntu-latest
-    needs: [selenium-web-tests, appium-mobile-tests, security-assessment-tests, baseline-load-tests]
+    needs: [selenium-web-tests, appium-mobile-tests, security-assessment-tests, baseline-load-tests, security-load-tests]
     if: always()
 
     steps:
@@ -233,30 +271,38 @@ jobs:
           path: consolidated_excel_reports/
         continue-on-error: true
 
-      - name: Download Load Test Excel Report
+      - name: Download Baseline Load Test Excel Report
         uses: actions/download-artifact@v4
         with:
           name: 4_Baseline_Load_Test_100_Users_Results.xlsx
           path: consolidated_excel_reports/
         continue-on-error: true
 
-      - name: Upload Consolidated 4-Test Excel Bundle Artifact
+      - name: Download Security Load Test Excel Report
+        uses: actions/download-artifact@v4
+        with:
+          name: 5_Security_Load_Test_Results.xlsx
+          path: consolidated_excel_reports/
+        continue-on-error: true
+
+      - name: Upload Consolidated All-Tests Excel Bundle Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ALL_4_TEST_SUITES_EXCEL_REPORTS_BUNDLE
+          name: ALL_TEST_SUITES_EXCEL_REPORTS_BUNDLE
           path: consolidated_excel_reports/
           retention-days: 90
 
       - name: Publish GitHub Actions Step Summary
         run: |
-          echo "## 📊 All 4 Test Suite Execution & Excel Reports Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "## 📊 All Test Suite Execution & Excel Reports Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "All 4 test suites executed successfully. You can download each individual Excel spreadsheet or the complete bundle from the Actions Artifacts section below:" >> "$GITHUB_STEP_SUMMARY"
+          echo "All test suites executed successfully. You can download each individual Excel spreadsheet or the complete bundle from the Actions Artifacts section below:" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "| # | Test Suite Domain | Test Scope | Generated Excel Artifact Name | Status |" >> "$GITHUB_STEP_SUMMARY"
           echo "|---|---|---|---|---|" >> "$GITHUB_STEP_SUMMARY"
           echo "| **1** | **Selenium Web Frontend E2E** | 315 Test Cases (Login & Auth) | \`1_Selenium_Web_Login_Test_Cases_300.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
           echo "| **2** | **Appium Mobile App E2E** | 310 Test Cases (Android & iOS) | \`2_Appium_Mobile_App_Test_Cases_300.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
           echo "| **3** | **Security Assessment** | SAST / DAST Vulnerabilities & Endpoint Inventory | \`3_Security_Assessment_Findings.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **4** | **Baseline / Load Testing** | 100 Virtual Users / 1 Minute (RPS & Latency) | \`4_Baseline_Load_Test_100_Users_Results.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **ALL** | **Consolidated Bundle** | All 4 Test Excel Reports Package | \`ALL_4_TEST_SUITES_EXCEL_REPORTS_BUNDLE\` | 📦 Ready to Download |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **4** | **Baseline Load Testing** | 100 Virtual Users / 1 Minute (RPS & Latency) | \`4_Baseline_Load_Test_100_Users_Results.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **5** | **Security Load Testing** | Rate Limiting, DoS Resilience & Brute-Force Flood | \`5_Security_Load_Test_Results.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **ALL** | **Consolidated Bundle** | All Test Excel Reports Package | \`ALL_TEST_SUITES_EXCEL_REPORTS_BUNDLE\` | 📦 Ready to Download |" >> "$GITHUB_STEP_SUMMARY"
