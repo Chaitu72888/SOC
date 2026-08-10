@@ -1,10 +1,12 @@
 from flask import Blueprint, jsonify, request
+from flask_login import login_required
 from models import db, DataUsageSetting, PlatformSync, APIDataLog
 import time
 
 telemetry_bp = Blueprint('telemetry', __name__)
 
 @telemetry_bp.route('/settings', methods=['GET', 'POST'])
+@login_required
 def data_usage_settings():
     setting = DataUsageSetting.query.first()
     if not setting:
@@ -27,11 +29,13 @@ def data_usage_settings():
     return jsonify({"success": True, "data": setting.to_dict()})
 
 @telemetry_bp.route('/sync', methods=['GET'])
+@login_required
 def platform_sync_status():
     syncs = PlatformSync.query.all()
     return jsonify({"success": True, "data": [s.to_dict() for s in syncs]})
 
 @telemetry_bp.route('/logs', methods=['GET'])
+@login_required
 def telemetry_logs():
     limit = request.args.get('limit', 50, type=int)
     logs = APIDataLog.query.order_by(APIDataLog.timestamp.desc()).limit(limit).all()

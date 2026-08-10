@@ -448,15 +448,7 @@ jobs:
         run: |
           echo "## Phase 4 — DAST API Security Results" >> "$GITHUB_STEP_SUMMARY"
           if [ -f dast-report.json ]; then
-            python3 -c "
-          import json
-          d = json.load(open('dast-report.json'))
-          s = d['summary']
-          print(f'| Total Checks | {s[\"total\"]} |')
-          print(f'| Passed | {s[\"passed\"]} |')
-          print(f'| Failed | {s[\"failed\"]} |')
-          print(f'| Warnings | {s[\"warnings\"]} |')
-          " >> "$GITHUB_STEP_SUMMARY"
+            python3 -c "import json; d=json.load(open('dast-report.json')).get('summary',{}); print(f'| Total Checks | {d.get(\"total\",0)} |\n| Passed | {d.get(\"passed\",0)} |\n| Failed | {d.get(\"failed\",0)} |\n| Warnings | {d.get(\"warnings\",0)} |')" >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload DAST Report
