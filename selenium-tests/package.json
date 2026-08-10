@@ -1,0 +1,29 @@
+{
+  "name": "selenium-e2e-tests",
+  "version": "1.0.0",
+  "description": "Selenium E2E Automation Test Suite for Web Frontend Login Functionality",
+  "main": "tests/login-tests.js",
+  "scripts": {
+    "test": "mocha tests/login-tests.js --timeout 60000",
+    "test:standalone": "node tests/login-tests.js"
+  },
+  "keywords": [
+    "selenium",
+    "webdriver",
+    "e2e",
+    "testing",
+    "login",
+    "mocha"
+  ],
+  "author": "Antigravity Test Automation",
+  "license": "ISC",
+  "dependencies": {
+    "selenium-webdriver": "^4.18.1"
+  },
+  "devDependencies": {
+    "chai": "^4.3.10",
+    "chromedriver": "^122.0.0",
+    "geckodriver": "^4.3.0",
+    "mocha": "^10.3.0"
+  }
+}

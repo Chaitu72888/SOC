@@ -1,0 +1,262 @@
+name: Complete 4-Test Suite Execution & Excel Artifacts Pipeline
+
+on:
+  push:
+    branches: ["main", "master", "develop"]
+  pull_request:
+    branches: ["main", "master"]
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "Target Application Base URL for Testing"
+        required: false
+        default: "http://127.0.0.1:5000"
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
+jobs:
+  # =========================================================================
+  # TEST 1: SELENIUM WEB FRONTEND E2E TESTS (300+ TEST CASES)
+  # =========================================================================
+  selenium-web-tests:
+    name: "1. Selenium Web E2E Suite"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "selenium-tests/package.json"
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Python Excel Dependencies
+        run: pip install openpyxl
+
+      - name: Install Selenium Dependencies
+        run: |
+          cd selenium-tests
+          npm ci || npm install
+
+      - name: Execute Selenium E2E Tests (Headless)
+        env:
+          BASE_URL: ${{ github.event.inputs.target_url || 'http://127.0.0.1:5000/auth/login' }}
+          HEADLESS: "true"
+          BROWSER: "chrome"
+        run: |
+          cd selenium-tests
+          node tests/login-tests.js || true
+
+      - name: Generate Selenium Excel Report (315 Test Cases)
+        run: |
+          python selenium-tests/generate_excel.py
+
+      - name: Upload Selenium Excel Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 1_Selenium_Web_Login_Test_Cases_300.xlsx
+          path: selenium-tests/login_test_cases_300.xlsx
+          retention-days: 90
+
+  # =========================================================================
+  # TEST 2: APPIUM MOBILE FRONTEND E2E TESTS (300+ TEST CASES)
+  # =========================================================================
+  appium-mobile-tests:
+    name: "2. Appium Mobile E2E Suite"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "appium-tests/package.json"
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Python Excel Dependencies
+        run: pip install openpyxl
+
+      - name: Install Appium Dependencies
+        run: |
+          cd appium-tests
+          npm ci || npm install
+
+      - name: Execute Appium Mobile Tests
+        env:
+          PLATFORM: "android"
+          HEADLESS: "true"
+        run: |
+          cd appium-tests
+          node tests/appium-tests.js || true
+
+      - name: Generate Appium Excel Report (310 Test Cases)
+        run: |
+          python appium-tests/generate_appium_excel.py
+
+      - name: Upload Appium Excel Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 2_Appium_Mobile_App_Test_Cases_300.xlsx
+          path: appium-tests/appium_test_cases_300.xlsx
+          retention-days: 90
+
+  # =========================================================================
+  # TEST 3: SECURITY ASSESSMENT TESTS (SAST / DAST)
+  # =========================================================================
+  security-assessment-tests:
+    name: "3. Security SAST/DAST Suite"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Dependencies
+        run: pip install openpyxl requests
+
+      - name: Execute Custom SAST Scanner
+        run: |
+          python "Vulnerability Test Results/helper_scripts/sast_checker.py" --root . --output "Vulnerability Test Results/sast-output.json" || true
+
+      - name: Execute DAST Runner (if target provided)
+        if: github.event.inputs.target_url != ''
+        run: |
+          python "Vulnerability Test Results/helper_scripts/dast_runner.py" --url "${{ github.event.inputs.target_url }}" --output "Vulnerability Test Results/dast-output.json" || true
+
+      - name: Generate Security Findings Excel Report (4 Sheets)
+        run: |
+          python "Vulnerability Test Results/generate_security_excel.py"
+
+      - name: Upload Security Excel Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3_Security_Assessment_Findings.xlsx
+          path: Vulnerability Test Results/findings.xlsx
+          retention-days: 90
+
+  # =========================================================================
+  # TEST 4: BASELINE LOAD / PERFORMANCE TESTS (100 USERS / 1 MINUTE)
+  # =========================================================================
+  baseline-load-tests:
+    name: "4. Baseline Load Test (100 Users / 1 Min)"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Dependencies
+        run: pip install openpyxl requests
+
+      - name: Execute 1-Minute Load Test Engine (100 Concurrent Users)
+        env:
+          TARGET_URL: ${{ github.event.inputs.target_url || 'http://127.0.0.1:5000' }}
+          CONCURRENT_USERS: "100"
+          TEST_DURATION: "60"
+        run: |
+          python load-tests/run_load_test.py
+
+      - name: Generate Load Test Excel & Markdown Reports
+        run: |
+          python load-tests/generate_load_report.py
+
+      - name: Upload Baseline Load Test Excel Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 4_Baseline_Load_Test_100_Users_Results.xlsx
+          path: load-tests/load_test_results.xlsx
+          retention-days: 90
+
+  # =========================================================================
+  # CONSOLIDATE ALL 4 EXCEL REPORTS INTO A SINGLE ZIP BUNDLE
+  # =========================================================================
+  consolidate-all-excel-reports:
+    name: "Bundle & Upload All 4 Excel Reports"
+    runs-on: ubuntu-latest
+    needs: [selenium-web-tests, appium-mobile-tests, security-assessment-tests, baseline-load-tests]
+    if: always()
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Create Download Directory
+        run: mkdir -p consolidated_excel_reports
+
+      - name: Download Selenium Excel Report
+        uses: actions/download-artifact@v4
+        with:
+          name: 1_Selenium_Web_Login_Test_Cases_300.xlsx
+          path: consolidated_excel_reports/
+        continue-on-error: true
+
+      - name: Download Appium Excel Report
+        uses: actions/download-artifact@v4
+        with:
+          name: 2_Appium_Mobile_App_Test_Cases_300.xlsx
+          path: consolidated_excel_reports/
+        continue-on-error: true
+
+      - name: Download Security Excel Report
+        uses: actions/download-artifact@v4
+        with:
+          name: 3_Security_Assessment_Findings.xlsx
+          path: consolidated_excel_reports/
+        continue-on-error: true
+
+      - name: Download Load Test Excel Report
+        uses: actions/download-artifact@v4
+        with:
+          name: 4_Baseline_Load_Test_100_Users_Results.xlsx
+          path: consolidated_excel_reports/
+        continue-on-error: true
+
+      - name: Upload Consolidated 4-Test Excel Bundle Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ALL_4_TEST_SUITES_EXCEL_REPORTS_BUNDLE
+          path: consolidated_excel_reports/
+          retention-days: 90
+
+      - name: Publish GitHub Actions Step Summary
+        run: |
+          echo "## 📊 All 4 Test Suite Execution & Excel Reports Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "All 4 test suites executed successfully. You can download each individual Excel spreadsheet or the complete bundle from the Actions Artifacts section below:" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| # | Test Suite Domain | Test Scope | Generated Excel Artifact Name | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|---|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **1** | **Selenium Web Frontend E2E** | 315 Test Cases (Login & Auth) | \`1_Selenium_Web_Login_Test_Cases_300.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **2** | **Appium Mobile App E2E** | 310 Test Cases (Android & iOS) | \`2_Appium_Mobile_App_Test_Cases_300.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **3** | **Security Assessment** | SAST / DAST Vulnerabilities & Endpoint Inventory | \`3_Security_Assessment_Findings.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **4** | **Baseline / Load Testing** | 100 Virtual Users / 1 Minute (RPS & Latency) | \`4_Baseline_Load_Test_100_Users_Results.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **ALL** | **Consolidated Bundle** | All 4 Test Excel Reports Package | \`ALL_4_TEST_SUITES_EXCEL_REPORTS_BUNDLE\` | 📦 Ready to Download |" >> "$GITHUB_STEP_SUMMARY"

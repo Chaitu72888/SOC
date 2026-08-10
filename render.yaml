@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: flask-soc-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: SECRET_KEY
+        sync: false
+      - key: ADMIN_USER
+        sync: false
+      - key: ADMIN_PASS
+        sync: false
+      - key: ABUSEIPDB_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: MOCK_TI_MODE
+        value: "false"
+      - key: FIREWALL_BACKEND
+        value: none
