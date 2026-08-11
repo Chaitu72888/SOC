@@ -2,65 +2,65 @@
   "summary": {
     "target_url": "http://127.0.0.1:5000",
     "virtual_users": 100,
-    "duration_seconds": 60.12,
-    "total_requests": 136095,
-    "successful_requests": 134968,
-    "failed_requests": 1127,
-    "requests_per_second": 2263.64,
-    "error_rate_pct": 0.83,
+    "duration_seconds": 5.07,
+    "total_requests": 11436,
+    "successful_requests": 11355,
+    "failed_requests": 81,
+    "requests_per_second": 2256.03,
+    "error_rate_pct": 0.71,
     "latency_min_ms": 35.0,
-    "latency_max_ms": 1499.86,
-    "latency_avg_ms": 199.12,
-    "latency_p50_ms": 180.92,
-    "latency_p90_ms": 242.61,
-    "latency_p95_ms": 263.8,
-    "latency_p99_ms": 1148.58
+    "latency_max_ms": 1494.48,
+    "latency_avg_ms": 198.64,
+    "latency_p50_ms": 180.82,
+    "latency_p90_ms": 243.49,
+    "latency_p95_ms": 264.6,
+    "latency_p99_ms": 1121.13
   },
   "endpoint_breakdown": {
     "POST /api/intel/lookup": {
-      "total_requests": 54507,
-      "failed_requests": 469,
-      "rps": 906.6,
+      "total_requests": 4602,
+      "failed_requests": 33,
+      "rps": 907.86,
       "min_ms": 35.0,
-      "max_ms": 1499.76,
-      "avg_ms": 199.83,
-      "p95_ms": 264.29
+      "max_ms": 1482.14,
+      "avg_ms": 198.03,
+      "p95_ms": 265.59
     },
     "GET /api/telemetry/logs": {
-      "total_requests": 40766,
-      "failed_requests": 329,
-      "rps": 678.05,
+      "total_requests": 3480,
+      "failed_requests": 20,
+      "rps": 686.52,
       "min_ms": 35.0,
-      "max_ms": 1499.86,
-      "avg_ms": 199.29,
-      "p95_ms": 263.46
+      "max_ms": 1494.48,
+      "avg_ms": 197.71,
+      "p95_ms": 262.63
     },
     "GET /api/telemetry/sync": {
-      "total_requests": 20315,
-      "failed_requests": 147,
-      "rps": 337.9,
+      "total_requests": 1675,
+      "failed_requests": 14,
+      "rps": 330.44,
       "min_ms": 35.0,
-      "max_ms": 1499.26,
-      "avg_ms": 197.92,
-      "p95_ms": 263.63
+      "max_ms": 1488.19,
+      "avg_ms": 199.45,
+      "p95_ms": 264.78
     },
     "GET /api/telemetry/settings": {
-      "total_requests": 13625,
-      "failed_requests": 129,
-      "rps": 226.62,
-      "min_ms": 35.0,
-      "max_ms": 1485.45,
-      "avg_ms": 198.29,
-      "p95_ms": 263.16
+      "total_requests": 1136,
+      "failed_requests": 7,
+      "rps": 224.1,
+      "min_ms": 49.64,
+      "max_ms": 1483.53,
+      "avg_ms": 198.7,
+      "p95_ms": 264.06
     },
     "POST /auth/login": {
-      "total_requests": 6882,
-      "failed_requests": 53,
-      "rps": 114.47,
+      "total_requests": 543,
+      "failed_requests": 7,
+      "rps": 107.12,
       "min_ms": 35.0,
-      "max_ms": 1494.32,
-      "avg_ms": 197.72,
-      "p95_ms": 263.23
+      "max_ms": 1490.25,
+      "avg_ms": 207.18,
+      "p95_ms": 265.3
     }
   }
 }

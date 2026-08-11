@@ -303,6 +303,6 @@ jobs:
           echo "| **1** | **Selenium Web Frontend E2E** | 315 Test Cases (Login & Auth) | \`1_Selenium_Web_Login_Test_Cases_300.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
           echo "| **2** | **Appium Mobile App E2E** | 310 Test Cases (Android & iOS) | \`2_Appium_Mobile_App_Test_Cases_300.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
           echo "| **3** | **Security Assessment** | SAST / DAST Vulnerabilities & Endpoint Inventory | \`3_Security_Assessment_Findings.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **4** | **Baseline Load Testing** | 100 Virtual Users / 1 Minute (RPS & Latency) | \`4_Baseline_Load_Test_100_Users_Results.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **5** | **Security Load Testing** | Rate Limiting, DoS Resilience & Brute-Force Flood | \`5_Security_Load_Test_Results.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **4** | **Baseline Load Testing** | 300 Test Cases (100 Virtual Users / 1 Minute RPS & Latency) | \`4_Baseline_Load_Test_100_Users_Results.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **5** | **Security Load Testing** | 300 Test Cases (Rate Limiting, DoS Resilience & Brute-Force Flood) | \`5_Security_Load_Test_Results.xlsx\` | ✅ Completed |" >> "$GITHUB_STEP_SUMMARY"
           echo "| **ALL** | **Consolidated Bundle** | All Test Excel Reports Package | \`ALL_TEST_SUITES_EXCEL_REPORTS_BUNDLE\` | 📦 Ready to Download |" >> "$GITHUB_STEP_SUMMARY"
