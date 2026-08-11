@@ -73,6 +73,10 @@ class APIDataLog(db.Model):
     status = db.Column(db.String(32), nullable=True)
     score = db.Column(db.Integer, nullable=True)
 
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
     def to_dict(self):
         return {
             'id': self.id,
